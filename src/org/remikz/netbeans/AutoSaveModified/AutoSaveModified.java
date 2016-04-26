@@ -2,13 +2,11 @@ package org.remikz.netbeans.AutoSaveModified;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
-import org.netbeans.api.actions.Savable;
 import org.openide.modules.OnStart;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 @ActionID(
@@ -24,7 +22,7 @@ public final class AutoSaveModified implements ActionListener, Runnable {
     private static final RequestProcessor RP =
             new RequestProcessor(AutoSaveModified.class);
     private final RequestProcessor.Task CLEANER = RP.create(this);
-    public int DELAY = 2000;
+    public int DELAY_MILLIS = 1000;
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -32,18 +30,8 @@ public final class AutoSaveModified implements ActionListener, Runnable {
 
     @Override
     public void run() {
-        save();
-        CLEANER.schedule(DELAY);
-    }
-
-    public void save() {
-        for(Savable s: Savable.REGISTRY.lookupAll(Savable.class)) {
-            try {
-                s.save();
-            } catch(IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
+        LifecycleManager.getDefault().saveAll();
+        CLEANER.schedule(DELAY_MILLIS);
     }
 }
 
