@@ -2,11 +2,13 @@ package org.remikz.netbeans.AutoSaveModified;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.openide.LifecycleManager;
+import java.io.IOException;
+import org.netbeans.api.actions.Savable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import org.openide.modules.OnStart;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 @ActionID(
@@ -19,8 +21,9 @@ import org.openide.util.RequestProcessor;
 @Messages("CTL_AutoSaveModified=Save Automatically")
 @OnStart
 public final class AutoSaveModified implements ActionListener, Runnable {
-    private static final RequestProcessor RP =
-            new RequestProcessor(AutoSaveModified.class);
+
+    private static final RequestProcessor RP
+            = new RequestProcessor(AutoSaveModified.class);
     private final RequestProcessor.Task CLEANER = RP.create(this);
     public int DELAY_MILLIS = 1000;
 
@@ -30,8 +33,19 @@ public final class AutoSaveModified implements ActionListener, Runnable {
 
     @Override
     public void run() {
-        LifecycleManager.getDefault().saveAll();
+        //LifecycleManager.getDefault().saveAll();
+        save();
         CLEANER.schedule(DELAY_MILLIS);
+    }
+
+    public void save() {
+        for (Savable s : Savable.REGISTRY.lookupAll(Savable.class)) {
+            try {
+                s.save();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
     }
 }
 
@@ -51,4 +65,4 @@ public final class AutoSaveModified implements ActionListener, Runnable {
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
